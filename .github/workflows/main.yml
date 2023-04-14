@@ -6,7 +6,6 @@ jobs:
   check:
     name: Check
     runs-on: ubuntu-latest
-    working-directory: rust_os
     steps:
       - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
@@ -21,7 +20,6 @@ jobs:
   test:
     name: Test Suite
     runs-on: ubuntu-latest
-    working-directory: rust_os
     steps:
       - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
@@ -36,7 +34,6 @@ jobs:
   fmt:
     name: Rustfmt
     runs-on: ubuntu-latest
-    working-directory: rust_os
     steps:
       - uses: actions/checkout@v3
       - uses: actions-rs/toolchain@v1
