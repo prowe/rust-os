@@ -18,7 +18,13 @@ jobs:
       RUST_TARGET: x86_64-unknown-none
     steps:
       - uses: actions/checkout@v3
+
       - name: Add Target
         run: rustup target add $RUST_TARGET
+
+      - name: Add components
+        run: |
+          rustup component add llvm-tools-preview
+
       - name: Build
         run: cargo build --target $RUST_TARGET

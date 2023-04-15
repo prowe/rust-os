@@ -1,14 +1,10 @@
-#![no_std] // don't link the Rust standard library
-#![no_main] // disable all Rust-level entry points
+fn main() {
+    // read env variables that were set in build script
+    let bios_path = env!("BIOS_PATH");
+    
+    let mut cmd = std::process::Command::new("qemu-system-x86_64");
+    cmd.arg("-drive").arg(format!("format=raw,file={bios_path}"));
 
-use core::panic::PanicInfo;
-
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    loop {}
-}
-
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+    let mut child = cmd.spawn().unwrap();
+    child.wait().unwrap();
 }
