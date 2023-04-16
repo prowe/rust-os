@@ -8,6 +8,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Install Components
+        run: rustup component add rustfmt
+
       - name: Format
         run: cargo fmt -- --check
 
@@ -23,7 +27,7 @@ jobs:
         run: rustup target add $RUST_TARGET
 
       - name: Install Components
-        run: rustup component add llvm-tools-preview
+        run: rustup component add llvm-tools-preview rust-src
 
       - name: Install bootimage
         run: cargo install bootimage
