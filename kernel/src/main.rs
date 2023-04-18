@@ -3,9 +3,9 @@
 
 use core::panic::PanicInfo;
 
-static HELLO: &[u8] = b"Hello World!";
-
 bootloader_api::entry_point!(kernel_main);
+
+static HELLO: &[u8] = b"Hello World!";
 
 fn kernel_main(_boot_info: &'static mut bootloader_api::BootInfo) -> ! {
     let vga_buffer = 0xb8000 as *mut u8;
