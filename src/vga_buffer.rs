@@ -1,3 +1,5 @@
+use core::fmt::{self, Write};
+
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 const PAGE_437_START: char = 0x20 as char;
@@ -38,12 +40,6 @@ pub struct Writer {
 }
 
 impl Writer {
-    pub fn write_string(&mut self, s: &str) {
-        for c in s.chars() {
-            self.write_char(c);
-        }
-    }
-
     pub fn write_char(&mut self, char: char) {
         match char {
             '\n' => self.new_line(),
@@ -68,7 +64,30 @@ impl Writer {
         return [byte, colors];
     }
 
-    fn new_line(&mut self) { /* TODO */
+    fn new_line(&mut self) {
+        for row in 1..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                self.buffer.chars[row - 1][col] = self.buffer.chars[row][col];
+            }
+        }
+        self.clear_row(BUFFER_HEIGHT - 1);
+        self.column_position = 0;
+    }
+
+    fn clear_row(&mut self, row: usize) {
+        let blank = self.encode_byte_to_buffer_format(' ' as u8);
+        for col in 0..BUFFER_WIDTH {
+            self.buffer.chars[row][col] = blank;
+        }
+    }
+}
+
+impl fmt::Write for Writer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        for c in s.chars() {
+            self.write_char(c);
+        }
+        Ok(())
     }
 }
 
@@ -81,6 +100,6 @@ pub fn print_something() {
     };
 
     writer.write_char('H');
-    writer.write_string("ello ");
-    writer.write_string("Wörld!");
+    writer.write_str("ello! ").unwrap();
+    write!(writer, "The numbers are {} and {}\n\nnew", 42, 1.0/3.0).unwrap();
 }
