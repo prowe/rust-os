@@ -1,5 +1,7 @@
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
+const PAGE_437_START: char = 0x20 as char;
+const PAGE_437_END: char = 0x7e as char;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -37,17 +39,15 @@ pub struct Writer {
 
 impl Writer {
     pub fn write_string(&mut self, s: &str) {
-        for byte in s.bytes() {
-            self.write_byte(byte);
+        for c in s.chars() {
+            self.write_char(c);
         }
     }
 
-    pub fn write_byte(&mut self, byte: u8) {
-        match byte {
-            // printable ASCII byte or newline
-            b'\n' => self.new_line(),
-            0x20..=0x7e => self.write_printable_byte(byte),
-            // not part of printable ASCII range
+    pub fn write_char(&mut self, char: char) {
+        match char {
+            '\n' => self.new_line(),
+            PAGE_437_START..=PAGE_437_END => self.write_printable_byte(char as u8),
             _ => self.write_printable_byte(0xfe),
         }
     }
@@ -80,7 +80,7 @@ pub fn print_something() {
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     };
 
-    writer.write_byte(b'H');
+    writer.write_char('H');
     writer.write_string("ello ");
     writer.write_string("Wörld!");
 }
