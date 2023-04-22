@@ -1,9 +1,25 @@
-use core::fmt::{self, Write};
+use core::fmt::{self};
+use spin::Mutex;
+use lazy_static::lazy_static;
 
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 const PAGE_437_START: char = 0x20 as char;
 const PAGE_437_END: char = 0x7e as char;
+
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
+        column_position: 0,
+        text_color: Color::White,
+        background_color: Color::Black,
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
+}
+
+// pub fn initialize() {
+//     let writer = WRITER.lock();
+//     lazy_static::initialize(&writer);
+// }
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,7 +45,7 @@ pub enum Color {
 
 #[repr(transparent)]
 struct Buffer {
-    chars: [[[u8; 2]; BUFFER_WIDTH]; BUFFER_HEIGHT],
+    chars: [[u16; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 pub struct Writer {
@@ -59,9 +75,9 @@ impl Writer {
         self.column_position += 1;
     }
 
-    fn encode_byte_to_buffer_format(&mut self, byte: u8) -> [u8; 2] {
-        let colors = (self.background_color as u8) << 4 | (self.text_color as u8);
-        return [byte, colors];
+    fn encode_byte_to_buffer_format(&mut self, byte: u8) -> u16 {
+        let merged = (byte as u16) << 8 | (self.background_color as u16) << 4 | (self.text_color as u16);
+        return merged.to_be();
     }
 
     fn new_line(&mut self) {
@@ -91,15 +107,19 @@ impl fmt::Write for Writer {
     }
 }
 
-pub fn print_something() {
-    let mut writer = Writer {
-        column_position: 0,
-        text_color: Color::Yellow,
-        background_color: Color::Black,
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
+#[macro_export]
+macro_rules! println {
+    () => (print!("\n"));
+    ($($arg:tt)*) => (print!("{}\n", format_args!($($arg)*)));
+}
 
-    writer.write_char('H');
-    writer.write_str("ello! ").unwrap();
-    write!(writer, "The numbers are {} and {}\n\nnew", 42, 1.0/3.0).unwrap();
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
 }
