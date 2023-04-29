@@ -39,7 +39,10 @@ fn panic(info: &PanicInfo) -> ! {
     loop {}
 }
 
-#[test_case]
-fn trivial_assertion() {
-    assert_eq!(2, 2);
+#[cfg(test)]
+mod tests {
+    #[test_case]
+    fn trivial_assertion() {
+        assert_eq!(2, 2);
+    }
 }
