@@ -1,6 +1,6 @@
 use core::fmt::{self};
-use spin::Mutex;
 use lazy_static::lazy_static;
+use spin::Mutex;
 
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
@@ -76,7 +76,8 @@ impl Writer {
     }
 
     fn encode_byte_to_buffer_format(&mut self, byte: u8) -> u16 {
-        let merged = (byte as u16) << 8 | (self.background_color as u16) << 4 | (self.text_color as u16);
+        let merged =
+            (byte as u16) << 8 | (self.background_color as u16) << 4 | (self.text_color as u16);
         return merged.to_be();
     }
 
