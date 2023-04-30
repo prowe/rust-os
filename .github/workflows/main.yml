@@ -26,6 +26,8 @@ jobs:
         with:
           platforms: x86_64
 
+      - run: which qemu-system-x86_64
+
       - name: Rustup
         uses: actions-rust-lang/setup-rust-toolchain@v1
 

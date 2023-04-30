@@ -128,7 +128,7 @@ pub fn _print(args: fmt::Arguments) {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test_case]
     fn test_println_simple() {
         println!("test_println_simple output");
@@ -146,7 +146,9 @@ mod tests {
         // https://en.wikipedia.org/wiki/Code_page_437#Character_set
         println!("Hello World");
         let screen_chars = &WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][0..11];
-        let expected = [0x0F48, 0x0F65, 0x0F6C, 0x0F6C, 0x0F6F, 0x0F20, 0x0F57, 0x0F6F, 0x0F72, 0x0F6C, 0x0F64];
+        let expected = [
+            0x0F48, 0x0F65, 0x0F6C, 0x0F6C, 0x0F6F, 0x0F20, 0x0F57, 0x0F6F, 0x0F72, 0x0F6C, 0x0F64,
+        ];
         assert_eq!(screen_chars, &expected);
     }
 }
