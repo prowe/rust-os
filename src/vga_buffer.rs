@@ -10,6 +10,7 @@ const PAGE_437_END: char = 0x7e as char;
 lazy_static! {
     pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         column_position: 0,
+        row_position: 0,
         text_color: Color::White,
         background_color: Color::Black,
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
@@ -52,10 +53,23 @@ pub struct Writer {
     text_color: Color,
     background_color: Color,
     column_position: usize,
+    row_position: usize,
     buffer: &'static mut Buffer,
 }
 
 impl Writer {
+    pub fn move_cursor_to(&mut self, row: usize, col: usize) -> (usize, usize) {
+        let prev_row = self.row_position;
+        let prev_col = self.column_position;
+        if row < BUFFER_HEIGHT {
+            self.row_position = row;
+        }
+        if row < BUFFER_WIDTH {
+            self.column_position = col;
+        }
+        return (prev_row, prev_col);
+    }
+
     pub fn write_char(&mut self, char: char) {
         if char == '\n' {
             self.new_line();
@@ -113,7 +127,7 @@ impl Writer {
             self.new_line();
         }
 
-        let row = BUFFER_HEIGHT - 1;
+        let row = self.row_position;
         let col = self.column_position;
         self.buffer.chars[row][col] = self.encode_byte_to_buffer_format(byte);
         self.column_position += 1;
@@ -126,13 +140,19 @@ impl Writer {
     }
 
     fn new_line(&mut self) {
+        self.column_position = 0;
+        if self.row_position >= BUFFER_HEIGHT {
+            self.scroll_up();
+        }
+    }
+
+    fn scroll_up(&mut self) {
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 self.buffer.chars[row - 1][col] = self.buffer.chars[row][col];
             }
         }
         self.clear_row(BUFFER_HEIGHT - 1);
-        self.column_position = 0;
     }
 
     fn clear_row(&mut self, row: usize) {
@@ -163,10 +183,22 @@ macro_rules! print {
     ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
 }
 
+#[macro_export]
+macro_rules! print_at {
+    ($row:expr, $col:expr, $($arg:tt)*) => ($crate::vga_buffer::_print_at($row, $col, format_args!($($arg)*)));
+}
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
+}
+
+pub fn _print_at(row: usize, col: usize, args: fmt::Arguments) {
+    use core::fmt::Write;
+    let mut writer = WRITER.lock();
+    writer.move_cursor_to(row, col);
+    writer.write_fmt(args).unwrap();
 }
 
 #[cfg(test)]
@@ -189,7 +221,7 @@ mod tests {
     fn test_println_output() {
         // https://en.wikipedia.org/wiki/Code_page_437#Character_set
         println!("Hello World");
-        let screen_chars = &WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][0..11];
+        let screen_chars = &WRITER.lock().buffer.chars[0][0..11];
         let expected = [
             0x0F48, 0x0F65, 0x0F6C, 0x0F6C, 0x0F6F, 0x0F20, 0x0F57, 0x0F6F, 0x0F72, 0x0F6C, 0x0F64,
         ];

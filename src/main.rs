@@ -19,8 +19,9 @@ pub extern "C" fn _start() -> ! {
     #[cfg(test)]
     test_main();
 
-    println!("Hello again");
-    println!(", some numbers: {} {}", 42, 1.337);
+    print_at!(2, 2, "┌───────────────┐");
+    print_at!(3, 2, "│ Hello World ! │");
+    print_at!(4, 2, "└───────────────┘");
 
     loop {}
 }
