@@ -57,11 +57,55 @@ pub struct Writer {
 
 impl Writer {
     pub fn write_char(&mut self, char: char) {
-        match char {
-            '\n' => self.new_line(),
-            PAGE_437_START..=PAGE_437_END => self.write_printable_byte(char as u8),
-            _ => self.write_printable_byte(0xfe),
+        if char == '\n' {
+            self.new_line();
+            return
         }
+        let printable_byte = match char {
+            '│' => 0xB3,
+            '┤' => 0xB4,
+            '╡' => 0xB5,
+            '╢' => 0xB6,
+            '╖' => 0xB7,
+            '╕' => 0xB8,
+            '╣' => 0xB9,
+            '║' => 0xBA,
+            '╗' => 0xBB,
+            '╝' => 0xBC,
+            '╜' => 0xBD,
+            '╛' => 0xBE,
+            '┐' => 0xBF,
+            '└' => 0xC0,
+            '┴' => 0xC1,
+            '┬' => 0xC2,
+            '├' => 0xC3,
+            '─' => 0xC4,
+            '┼' => 0xC5,
+            '╞' => 0xC6,
+            '╟' => 0xC7,
+            '╚' => 0xC8,
+            '╔' => 0xC9,
+            '╩' => 0xCA,
+            '╦' => 0xCB,
+            '╠' => 0xCC,
+            '═' => 0xCD,
+            '╬' => 0xCE,
+            '╧' => 0xCF,
+            '╨' => 0xD0,
+            '╤' => 0xD1,
+            '╥' => 0xD2,
+            '╙' => 0xD3,
+            '╘' => 0xD4,
+            '╒' => 0xD5,
+            '╓' => 0xD6,
+            '╫' => 0xD7,
+            '╪' => 0xD8,
+            '┘' => 0xD9,
+            '┌' => 0xDA,
+            PAGE_437_START..=PAGE_437_END => char as u8,
+            _ => 0xfe,
+        };
+        self.write_printable_byte(printable_byte);
     }
 
     fn write_printable_byte(&mut self, byte: u8) {

@@ -9,7 +9,6 @@ where
     T: Fn(),
 {
     fn run(&self) {
-        //FIXME: this outputs "&dyn core::ops::function::Fn()...       [ok]"
         serial_print!("{}...\t", core::any::type_name::<T>());
         self();
         serial_println!("[ok]");
