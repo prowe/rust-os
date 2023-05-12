@@ -73,7 +73,7 @@ impl Writer {
     pub fn write_char(&mut self, char: char) {
         if char == '\n' {
             self.new_line();
-            return
+            return;
         }
         let printable_byte = match char {
             '│' => 0xB3,

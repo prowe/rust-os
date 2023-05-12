@@ -7,10 +7,10 @@
 
 use core::panic::PanicInfo;
 
+mod interrupts;
 mod serial;
 mod test_support;
 mod vga_buffer;
-mod interrupts;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
